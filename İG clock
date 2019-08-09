@@ -1,0 +1,475 @@
+using InstagramApiSharp.API;
+using InstagramApiSharp.API.Builder;
+using InstagramApiSharp.Classes;
+using InstagramApiSharp.Logger;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using Microsoft.Win32;
+
+namespace canlı_pp_vip
+{
+
+    public partial class anamenu : MetroFramework.Forms.MetroForm
+    {
+        [DllImport("wininet.dll")]
+        public static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
+        public const int INTERNET_OPTION_SETTINGS_CHANGED = 39;
+        public const int INTERNET_OPTION_REFRESH = 37;
+        static bool settingsReturn, refreshReturn;
+
+
+
+        public anamenu()
+        {
+            InitializeComponent();
+
+        }
+        private static IInstaApi api;
+        private static UserSessionData user;
+        Bitmap bmp;
+       
+        private void Anamenu_Load(object sender, EventArgs e)
+        {
+          
+            proxy.Add("104.236.248.219:3128");
+          
+            metroLabel4.Text = Convert.ToInt32((this.Opacity * 10)*10).ToString();
+            metroTrackBar1.Value =Convert.ToInt32((this.Opacity*10)*10);
+            
+            Login();
+        }
+
+        public async void Login()
+        {
+
+            try
+            {
+                user = new UserSessionData();
+                user.UserName = kullanicibilgi.Default.kadi;
+                user.Password = kullanicibilgi.Default.sifre;
+                api = InstaApiBuilder.CreateBuilder()
+                    .SetUser(user)
+                    .UseLogger(new DebugLogger(LogLevel.Exceptions))
+                    .Build();
+                var loginRequest = await api.LoginAsync();
+                var currentUser = await api.GetCurrentUserAsync();
+                metroComboBox1.Items.Add(currentUser.Value.UserName);
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(currentUser.Value.ProfilePicture);
+                Bitmap bitmap; bitmap = new Bitmap(stream);
+             
+
+                if (bitmap != null)
+                    bitmap.Save("profile"+ ".jpg");
+
+                stream.Flush();
+                stream.Close();
+                client.Dispose();
+                pictureBox1.Image = bitmap;
+                metroComboBox1.SelectedIndex = 0;
+                timer1.Start();
+                metroToggle1.Enabled = true;
+             
+            }
+            catch (Exception)
+            {
+
+              
+            }
+          
+            
+        }
+        private void Button1_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void Anamenu_FormClosed(object sender, FormClosedEventArgs e)
+        {
+
+        }
+
+        private void Anamenu_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
+            registry.SetValue("ProxyEnable", 0);
+            registry.SetValue("ProxyServer", "0.0.0.0:0000");
+            settingsReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
+            refreshReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
+
+            Application.Exit();
+        }
+
+        private async void Timer1_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                var currentUser = await api.GetCurrentUserAsync();
+                var selectedIndex = metroComboBox1.SelectedIndex.ToString();
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(currentUser.Value.ProfilePicture);
+                Bitmap bitmap; bitmap = new Bitmap(stream);
+                pictureBox1.Image = bitmap;
+                metroLabel2.Text = "Biyografi; \n" + currentUser.Value.Biography;
+                metroLabel1.Text = "Ad ; \n" + currentUser.Value.FullName;
+                timer1.Interval = 1000;
+             
+
+            }
+            catch (Exception)
+            {
+
+            }
+            
+        }
+        double şeffaf;
+        private void MetroTrackBar1_Scroll(object sender, ScrollEventArgs e)
+        {
+            if (metroTrackBar1.Value < 20)
+            {
+                metroTrackBar1.Value = 20;
+            }
+            şeffaf = metroTrackBar1.Value;
+            şeffaf = şeffaf / 100;
+            this.Opacity = şeffaf;
+            metroLabel4.Text = metroTrackBar1.Value.ToString();
+       
+        }
+
+        private void MetroLabel2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MetroToggle2_CheckedChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void MetroToggle4_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MetroLabel10_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BunifuFlatButton1_Click(object sender, EventArgs e)
+        {
+            Form yeni = new foto();
+            yeni.ShowDialog();
+        }
+
+        private void BunifuFlatButton5_Click(object sender, EventArgs e)
+        {
+            metroToggle1.Checked = false;
+            Form yeni = new pp();
+            yeni.ShowDialog();
+        }
+
+        private void MetroComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BunifuFlatButton6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+   
+        
+        
+        private async void MetroToggle1_CheckedChanged(object sender, EventArgs e)
+        {
+       
+
+            if (metroToggle1.Checked == true)
+            {
+                
+                saatx = Convert.ToInt32(ppveri.Default.saatx);
+                saaty = Convert.ToInt32(ppveri.Default.saaty);
+                tarihx = Convert.ToInt32(ppveri.Default.tarihx);
+                tarihy = Convert.ToInt32(ppveri.Default.tarihy);
+                textx = Convert.ToInt32(ppveri.Default.textx);
+                texty = Convert.ToInt32(ppveri.Default.texty);
+                while (true)
+                {
+                    int saats = DateTime.Now.Hour;
+                    int dakikas = DateTime.Now.Minute;
+                    int saniyes = DateTime.Now.Second;
+                    if (metroToggle1.Checked == false)
+                    {
+                        break;
+                    }
+                    try
+                    {
+                       if (anlik != DateTime.Now.ToShortTimeString() && ppveri.Default.saniye == false)
+                               {
+
+                           
+                            saniyes = saniyes + 3;
+                            if (saniyes >= 60)
+                            {
+                                dakikas = dakikas + 1;
+                                saniyes = 00;
+                            }
+
+                            p++;
+                            anlik = DateTime.Now.ToShortTimeString();
+                            if (ppveri.Default.koleksiyon == "0")
+                            {
+                                int maxp = Directory.GetFiles(@"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon1, "*.*", SearchOption.AllDirectories).Length;
+                                if (p == maxp)
+                                {
+                                    p = 0;
+                                }
+                                kullanicibilgi.Default.dosyayolu = @"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon1;
+                            }
+                            if (ppveri.Default.koleksiyon == "1")
+                            {
+                                int maxp = Directory.GetFiles(@"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon2, "*.*", SearchOption.AllDirectories).Length;
+
+                                if (p == maxp)
+                                {
+                                    p = 0;
+                                }
+                                kullanicibilgi.Default.dosyayolu = @"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon2;
+                            }
+                            if (ppveri.Default.koleksiyon == "2")
+                            {
+                                int maxp = Directory.GetFiles(@"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon3, "*.*", SearchOption.AllDirectories).Length;
+                                if (p == maxp)
+                                {
+                                    p = 0;
+                                }
+                                kullanicibilgi.Default.dosyayolu = @"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon3;
+                            }
+                            bmp = new Bitmap(kullanicibilgi.Default.dosyayolu + "\\pp" + p + ".jpg");
+                            Graphics g = Graphics.FromImage(bmp);
+                            if (ppveri.Default.saat == true && ppveri.Default.saniye == false)
+                            {
+                             
+                                    g.DrawString(DateTime.Now.ToShortTimeString(), new Font("Times New Roman", Convert.ToInt32(ppveri.Default.saatboyut), FontStyle.Bold)
+                     , new SolidBrush(Color.White), saatx, saaty);
+                                
+                               
+
+
+                            }
+                            if (ppveri.Default.tarih == true)
+                            {
+                                g.DrawString(DateTime.Now.ToShortDateString(), new Font("Times New Roman", Convert.ToInt32(ppveri.Default.tarihboyut), FontStyle.Bold)
+                         , new SolidBrush(Color.White), tarihx, tarihy);
+                            }
+                            if (ppveri.Default.text == true)
+                            {
+                                g.DrawString(ppveri.Default.textveri, new Font("Times New Roman", Convert.ToInt32(ppveri.Default.textboyut), FontStyle.Bold)
+                        , new SolidBrush(Color.White), textx, texty);
+                            }
+
+              
+                            bmp.Save("ppcurrent.png");
+                            var Path = @"ppcurrent.png";
+                            var Bytes = File.ReadAllBytes(Path);
+                            var pp = await api.AccountProcessor.ChangeProfilePictureAsync(Bytes);
+                            //string yazılacak = "Profil fotoğrafının yapımcısı @fr3nd.w \n";
+                            //var haha = await api.GetCurrentUserAsync();
+                            //string bio = haha.Value.Biography;
+                            //string newbio = bio.Replace(yazılacak, "");
+                            //await api.AccountProcessor.SetBiographyAsync(yazılacak + newbio);
+                            proxys++;
+                            if (proxys == 15)
+                            {
+
+                                if (proxyk > proxy.Count())
+                                {
+                                    proxyk = 0;
+                                }
+                                else
+                                {
+                                    RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
+                                    registry.SetValue("ProxyEnable", 1);
+                                    registry.SetValue("ProxyServer", proxy[proxyk]);
+                               
+                                    settingsReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
+                                    refreshReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
+                                    metroLabel8.Text = "Şu an kullanılan proxy; " + proxy[proxyk];
+                                    proxyk++;
+                                    proxys = 0;
+                                }
+
+                            }
+                            kackere++;
+                            metroLabel7.Text = "Profil fotoğrafı " + kackere.ToString() + " değişti";
+
+
+                        }
+
+                        if (anlik != DateTime.Now.ToLongTimeString() && ppveri.Default.saniye == true)
+                            {
+                          
+                            saniyes = saniyes + 3;
+                                if (saniyes >= 60)
+                                {
+                                    dakikas =dakikas+ 1;
+                                    saniyes = 00;
+                                }
+                       
+                                p++;
+                                anlik = DateTime.Now.ToLongTimeString();
+                                if (ppveri.Default.koleksiyon == "0")
+                                {
+                                    int maxp = Directory.GetFiles(@"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon1, "*.*", SearchOption.AllDirectories).Length;
+                                    if (p == maxp)
+                                    {
+                                        p = 0;
+                                    }
+                                    kullanicibilgi.Default.dosyayolu = @"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon1;
+                                }
+                                if (ppveri.Default.koleksiyon == "1")
+                                {
+                                    int maxp = Directory.GetFiles(@"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon2, "*.*", SearchOption.AllDirectories).Length;
+
+                                    if (p == maxp)
+                                    {
+                                        p = 0;
+                                    }
+                                    kullanicibilgi.Default.dosyayolu = @"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon2;
+                                }
+                                if (ppveri.Default.koleksiyon == "2")
+                                {
+                                    int maxp = Directory.GetFiles(@"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon3, "*.*", SearchOption.AllDirectories).Length;
+                                    if (p == maxp)
+                                    {
+                                        p = 0;
+                                    }
+                                    kullanicibilgi.Default.dosyayolu = @"C:\\" + "koleksiyon\\" + kullanicibilgi.Default.koleksiyon3;
+                                }
+                                bmp = new Bitmap(kullanicibilgi.Default.dosyayolu + "\\pp" + p + ".jpg");
+                                Graphics g = Graphics.FromImage(bmp);
+                                if (ppveri.Default.saat == true && ppveri.Default.saniye == true)
+                                {
+                                    if (saniyes < 10)
+                                    {
+                                        g.DrawString(DateTime.Now.ToShortTimeString()+":0" + saniyes.ToString(), new Font("Times New Roman", Convert.ToInt32(ppveri.Default.saatboyut), FontStyle.Bold)
+                         , new SolidBrush(Color.White), saatx, saaty);
+                                    }
+                                    else
+                                    {
+                                        g.DrawString(DateTime.Now.ToShortTimeString() + ":" + saniyes.ToString(), new Font("Times New Roman", Convert.ToInt32(ppveri.Default.saatboyut), FontStyle.Bold)
+                         , new SolidBrush(Color.White), saatx, saaty);
+
+                                    }
+                               
+
+                                }
+                                if (ppveri.Default.tarih == true)
+                                {
+                                    g.DrawString(DateTime.Now.ToShortDateString(), new Font("Times New Roman", Convert.ToInt32(ppveri.Default.tarihboyut), FontStyle.Bold)
+                             , new SolidBrush(Color.White), tarihx, tarihy);
+                                }
+                                if (ppveri.Default.text == true)
+                                {
+                                    g.DrawString(ppveri.Default.textveri, new Font("Times New Roman", Convert.ToInt32(ppveri.Default.textboyut), FontStyle.Bold)
+                            , new SolidBrush(Color.White), textx, texty);
+                                }
+
+
+                                bmp.Save("ppcurrent.png");
+                                var Path = @"ppcurrent.png";
+                                var Bytes = File.ReadAllBytes(Path);
+                                var pp = await api.AccountProcessor.ChangeProfilePictureAsync(Bytes);
+                            //string yazılacak = "Profil fotoğrafının yapımcısı @fr3nd.w \n";
+                            //var haha = await api.GetCurrentUserAsync();
+                            //string bio = haha.Value.Biography;
+                            //string newbio = bio.Replace(yazılacak, "");
+                            //await api.AccountProcessor.SetBiographyAsync(yazılacak + newbio);
+                            proxys++;
+                                if (proxys == 15)
+                                {
+
+                                    if (proxyk > proxy.Count())
+                                    {
+                                        proxyk = 0;
+                                    }
+                                    else
+                                    {
+                                        RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
+                                        registry.SetValue("ProxyEnable", 1);
+                                        registry.SetValue("ProxyServer", proxy[proxyk]);
+                                        
+                                    settingsReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
+                                        refreshReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
+                                        metroLabel8.Text = "Şu an kullanılan proxy; " + proxy[proxyk];
+                                        proxyk++;
+                                        proxys = 0;
+                                    }
+
+                                }
+                                kackere++;
+                                metroLabel7.Text = "Profil fotoğrafı " + kackere.ToString() + " değişti";
+                            }
+                        
+                    }
+
+                    catch (Exception)
+                    {
+                        break;
+
+                    }
+                }
+      
+            }
+            else
+            {
+                timer2.Stop();
+            }
+        }
+        int p;
+        float saatx, saaty, tarihx, tarihy, textx, texty;
+
+        private void BunifuFlatButton3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BunifuFlatButton4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MetroLabel10_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Timer3_Tick(object sender, EventArgs e)
+        {
+           
+        }
+
+        string anlik;
+        int kackere;
+        int proxys;
+        int proxyk;
+        List<string> proxy = new List<string>();
+        
+    }
+}
